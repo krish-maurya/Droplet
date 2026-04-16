@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useForm } from "react-hook-form";
 import { useClerk, useSignUp } from "@clerk/nextjs";
@@ -120,22 +120,34 @@ export default function SignUpForm() {
 
     if (verifying) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-                <div className="bg-white rounded-2xl border border-gray-200 p-8 w-full max-w-sm flex flex-col gap-5">
-
-                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="min-h-screen bg-[#f7f5f0] flex items-center justify-center px-4">
+                {/* Subtle grid background */}
+                <div 
+                    className="fixed inset-0 pointer-events-none z-0"
+                    style={{
+                        backgroundImage: `
+                            linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                            linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+                        `,
+                        backgroundSize: "32px 32px",
+                    }}
+                />
+                
+                <div className="relative z-10 bg-white rounded-3xl border border-[#e6e1d8] shadow-sm p-8 w-full max-w-sm flex flex-col gap-6">
+                    {/* Icon */}
+                    <div className="w-12 h-12 rounded-2xl bg-[#f0ede8] flex items-center justify-center">
+                        <svg className="w-6 h-6 text-[#2c2b28]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                             <rect x="2" y="4" width="20" height="16" rx="2" />
                             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                         </svg>
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-semibold text-gray-900">Check your email</h2>
-                        <p className="text-sm text-gray-500">Enter the 6-digit code we sent to your email.</p>
+                        <h2 className="text-xl font-semibold tracking-tight text-[#2c2b28]">Check your email</h2>
+                        <p className="text-sm text-[#8b877f]">Enter the 6-digit code we sent to your email.</p>
                     </div>
 
-                    <form onSubmit={handleVerification} className="flex flex-col gap-4">
+                    <form onSubmit={handleVerification} className="flex flex-col gap-5">
                         <input
                             type="text"
                             inputMode="numeric"
@@ -146,10 +158,10 @@ export default function SignUpForm() {
                                 setVerificationCode(e.target.value.replace(/\D/g, ""));
                                 setVerificationError(null);
                             }}
-                            className={`w-full text-center text-2xl font-semibold tracking-widest px-4 py-3 rounded-xl border bg-gray-50 text-black placeholder-gray-400 outline-none focus:ring-2 transition
-                ${verificationError
-                                    ? "border-red-400 focus:ring-red-200"
-                                    : "border-gray-300 focus:ring-blue-200"
+                            className={`w-full text-center text-2xl font-semibold tracking-[0.25em] px-4 py-3 rounded-xl border bg-[#faf8f5] text-[#2c2b28] placeholder-[#cbc4b8] outline-none focus:ring-2 transition
+                                ${verificationError
+                                    ? "border-red-300 focus:ring-red-200"
+                                    : "border-[#e6e1d8] focus:ring-[#2c2b28]/10 focus:border-[#2c2b28]/30"
                                 }`}
                         />
 
@@ -157,16 +169,15 @@ export default function SignUpForm() {
                             <p className="text-sm text-center text-red-500">{verificationError}</p>
                         )}
 
-
                         <button
                             type="submit"
                             disabled={isSubmitting || verificationCode.length < 6}
-                            className="w-full py-3 rounded-xl bg-gray-900 text-white text-sm font-medium transition hover:bg-gray-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-full py-3 rounded-xl bg-[#2c2b28] text-white text-sm font-medium transition hover:bg-[#3d3b37] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? "Verifying…" : "Verify email"}
                         </button>
 
-                        <p className="text-center text-sm text-gray-400">
+                        <p className="text-center text-sm text-[#a39e94]">
                             Didn't get it?{" "}
                             <button
                                 type="button"
@@ -175,7 +186,7 @@ export default function SignUpForm() {
                                     setVerificationError(null);
                                     await signUp?.verifications.sendEmailCode();
                                 }}
-                                className="text-blue-500 font-medium hover:underline"
+                                className="text-[#2c2b28] font-medium hover:underline"
                             >
                                 Resend code
                             </button>
@@ -188,28 +199,45 @@ export default function SignUpForm() {
 
     // ── Sign Up Screen ──────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 w-full max-w-sm flex flex-col gap-6">
-
-                {/* Header */}
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-xl font-semibold text-gray-900">Create an account</h1>
-                    <p className="text-sm text-gray-500">Sign up to get started.</p>
+        <div className="min-h-screen bg-[#f7f5f0] flex items-center justify-center px-4">
+            {/* Subtle grid background */}
+            <div 
+                className="fixed inset-0 pointer-events-none z-0"
+                style={{
+                    backgroundImage: `
+                        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+                    `,
+                    backgroundSize: "32px 32px",
+                }}
+            />
+            
+            <div className="relative z-10 bg-white rounded-3xl border border-[#e6e1d8] shadow-sm p-8 w-full max-w-sm flex flex-col gap-6">
+                {/* Logo / Brand */}
+                <div className="flex justify-center mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm">
+                        <span className="text-white text-base font-medium">◈</span>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                {/* Header */}
+                <div className="flex flex-col gap-1 text-center">
+                    <h1 className="text-2xl font-semibold tracking-tight text-[#2c2b28]">Create an account</h1>
+                    <p className="text-sm text-[#8b877f]">Sign up to get started.</p>
+                </div>
 
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
                     {/* Email */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-gray-700">Email</label>
+                        <label className="text-sm font-medium text-[#5b5852]">Email</label>
                         <input
                             type="email"
                             placeholder="you@example.com"
                             {...register("email")}
-                            className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50 text-sm text-black placeholder-gray-400 outline-none focus:ring-2 transition
-                ${errors.email
-                                    ? "border-red-400 focus:ring-red-200"
-                                    : "border-gray-300 focus:ring-blue-200"
+                            className={`w-full px-4 py-2.5 rounded-xl border bg-[#faf8f5] text-sm text-[#2c2b28] placeholder-[#cbc4b8] outline-none focus:ring-2 transition
+                                ${errors.email
+                                    ? "border-red-300 focus:ring-red-200"
+                                    : "border-[#e6e1d8] focus:ring-[#2c2b28]/10 focus:border-[#2c2b28]/30"
                                 }`}
                         />
                         {errors.email && (
@@ -219,15 +247,15 @@ export default function SignUpForm() {
 
                     {/* Password */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-gray-700">Password</label>
+                        <label className="text-sm font-medium text-[#5b5852]">Password</label>
                         <input
                             type="password"
                             placeholder="••••••••"
                             {...register("password")}
-                            className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50 text-sm text-black placeholder-gray-400 outline-none focus:ring-2 transition
-                ${errors.password
-                                    ? "border-red-400 focus:ring-red-200"
-                                    : "border-gray-300 focus:ring-blue-200"
+                            className={`w-full px-4 py-2.5 rounded-xl border bg-[#faf8f5] text-sm text-[#2c2b28] placeholder-[#cbc4b8] outline-none focus:ring-2 transition
+                                ${errors.password
+                                    ? "border-red-300 focus:ring-red-200"
+                                    : "border-[#e6e1d8] focus:ring-[#2c2b28]/10 focus:border-[#2c2b28]/30"
                                 }`}
                         />
                         {errors.password && (
@@ -237,15 +265,15 @@ export default function SignUpForm() {
 
                     {/* Confirm Password */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-gray-700">Confirm password</label>
+                        <label className="text-sm font-medium text-[#5b5852]">Confirm password</label>
                         <input
                             type="password"
                             placeholder="••••••••"
                             {...register("passwordConfirmation")}
-                            className={`w-full px-4 py-2.5 rounded-xl border bg-gray-50 text-sm text-black placeholder-gray-400 outline-none focus:ring-2 transition
-                ${errors.passwordConfirmation
-                                    ? "border-red-400 focus:ring-red-200"
-                                    : "border-gray-300 focus:ring-blue-200"
+                            className={`w-full px-4 py-2.5 rounded-xl border bg-[#faf8f5] text-sm text-[#2c2b28] placeholder-[#cbc4b8] outline-none focus:ring-2 transition
+                                ${errors.passwordConfirmation
+                                    ? "border-red-300 focus:ring-red-200"
+                                    : "border-[#e6e1d8] focus:ring-[#2c2b28]/10 focus:border-[#2c2b28]/30"
                                 }`}
                         />
                         {errors.passwordConfirmation && (
@@ -257,19 +285,21 @@ export default function SignUpForm() {
                     {authError && (
                         <p className="text-sm text-center text-red-500">{authError}</p>
                     )}
+                    
                     {/* Submit */}
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium transition hover:bg-gray-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full py-2.5 rounded-xl bg-[#2c2b28] text-white text-sm font-medium transition hover:bg-[#3d3b37] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? "Creating account…" : "Create account"}
                     </button>
                 </form>
+                
                 {/* Sign in link */}
-                <p className="text-center text-sm text-gray-400">
+                <p className="text-center text-sm text-[#a39e94]">
                     Already have an account?{" "}
-                    <a href="/sign-in" className="text-blue-500 font-medium hover:underline">
+                    <a href="/sign-in" className="text-[#2c2b28] font-medium hover:underline">
                         Sign in
                     </a>
                 </p>
