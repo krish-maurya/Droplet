@@ -3,10 +3,12 @@
 import { useForm } from "react-hook-form";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signInSchema } from "@/schemas/signInSchema";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FullPageLoader } from "@/components/Loader";
 
 export default function SignInForm() {
 
@@ -14,6 +16,7 @@ export default function SignInForm() {
     const { signIn } = useSignIn();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
 
     const {
@@ -57,13 +60,16 @@ export default function SignInForm() {
                     setAuthError(finalizeRes.error.message);
                     return;
                 }
-                router.push("/dashboard");
+                setIsRedirecting(true);
+                setTimeout(() => {
+                    router.replace("/dashboard");
+                }, 500);
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("SignIn error:", error);
             setAuthError(
-                error?.errors?.[0]?.message ||
+                error instanceof Error ? error.message :
                 "An error occurred during the sign-in process"
             );
         } finally {
@@ -71,8 +77,12 @@ export default function SignInForm() {
         }
     };
 
+    if (isRedirecting) {
+        return <FullPageLoader />;
+    }
+
     return (
-        <div className="min-h-screen bg-[#f7f5f0] flex">
+        <div className="min-h-screen flex">
             {/* Subtle grid background overlay */}
             <div 
                 className="fixed inset-0 pointer-events-none z-0"
@@ -85,104 +95,95 @@ export default function SignInForm() {
                 }}
             />
 
-            {/* ========== LEFT SIDE - LARGER TEXT ========== */}
-<div className="hidden lg:flex lg:w-1/2 relative z-10 bg-[#ece8e1] border-r border-[#e0dbd2] items-center justify-center p-12">                <div className="max-w-md">
+            {/* ========== LEFT SIDE - BRAND SECTION ========== */}
+            <div className="hidden lg:flex lg:w-1/2 relative z-10 bg-[#ece8e1] border-r border-[#e0dbd2] items-center justify-center p-12">
+                <div className="max-w-md">
                     {/* Logo */}
                     <div className="mb-12">
-                        <div className="w-12 h-12 rounded-xl bg-[#2c2b28] flex items-center justify-center">
-                            <span className="text-white text-lg font-medium">◈</span>
+                        <div className="w-14 h-14 rounded-2xl bg-[#2c2b28] flex items-center justify-center shadow-sm">
+                            <span className="text-white text-xl font-medium">◈</span>
                         </div>
                     </div>
 
-                    {/* Larger text content */}
-                    <div className="space-y-6">
-                        <h1 className="text-5xl md:text-6xl font-semibold tracking-tight text-[#2c2b28] leading-tight">
-                            Your workspace,<br />
-                            <span className="text-[#8b877f]">elevated.</span>
+                    {/* Animated quote section */}
+                    <div className="space-y-1 min-h-50">
+                        <h1 className="text-5xl md:text-8xl font-semibold tracking-[-0.04em] text-[#2c2b28] leading-[0.88]">
+                            Welcome back to
+                            <br />
+                            <span className="text-[#8b877f]">your workspace.</span>
                         </h1>
-                        
-                        <p className="text-lg text-[#8b877f] leading-relaxed">
-                            A calm, structured environment for your folders and files. 
-                            Minimal by design. Powerful by nature.
-                        </p>
+                    </div>
 
-                        <div className="pt-8">
-                            <div className="flex items-center gap-4 text-sm text-[#a39e94]">
-                                <span className="flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#2c2b28]/40"></span>
-                                    Organized files
-                                </span>
-                                <span className="w-px h-4 bg-[#d1cbc0]"></span>
-                                <span className="flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#2c2b28]/40"></span>
-                                    Smart folders
-                                </span>
-                                <span className="w-px h-4 bg-[#d1cbc0]"></span>
-                                <span className="flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#2c2b28]/40"></span>
-                                    Seamless sync
-                                </span>
+                    {/* Features list */}
+                    <div className="pt-12 mt-8 border-t border-[#d1cbc0]/50">
+                        <div className="flex flex-col gap-3 text-sm text-[#8b877f]">
+                            <div className="flex items-center gap-3">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#2c2b28]/40"></span>
+                                <span>Secure file storage</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#2c2b28]/40"></span>
+                                <span>Smart folder organization</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#2c2b28]/40"></span>
+                                <span>Seamless cross-device sync</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* ========== RIGHT SIDE - SIGN IN FORM (boxless, fields directly on page) ========== */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center px-6 md:px-12 relative z-10">
-                <div className="w-full float-left max-w-sm">
+            {/* ========== RIGHT SIDE - SIGN IN FORM ========== */}
+            <div className="w-full lg:w-1/2 relative z-10 bg-[#f7f5f0] flex items-center justify-center px-6 md:px-12 py-8">
+                <div className="w-full max-w-sm">
                     {/* Mobile logo */}
                     <div className="lg:hidden flex justify-center mb-8">
-                        <div className="w-10 h-10 rounded-xl bg-[#2c2b28] flex items-center justify-center">
-                            <span className="text-white text-base font-medium">◈</span>
+                        <div className="w-12 h-12 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm">
+                            <span className="text-white text-lg font-medium">◈</span>
                         </div>
                     </div>
 
-                    {/* Header - no box, just text */}
+                    {/* Header */}
                     <div className="mb-8">
                         <h2 className="text-2xl font-semibold tracking-tight text-[#2c2b28]">Welcome back</h2>
                         <p className="text-sm text-[#8b877f] mt-1">Sign in to continue to your workspace.</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        {/* Email Field */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-[#5b5852]">Email address</label>
+                        {/* Email */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-medium text-[#5b5852]">Email</label>
                             <input
                                 type="email"
                                 placeholder="you@example.com"
                                 {...register("identifier")}
-                                className={`w-full px-0 py-2 border-b bg-transparent text-[#2c2b28] text-base placeholder-[#cbc4b8] outline-none transition-all focus:border-[#2c2b28] ${
-                                    errors.identifier
-                                        ? "border-red-400"
-                                        : "border-[#e0dbd2]"
-                                }`}
+                                className={`w-full px-4 py-2.5 rounded-xl border bg-[#faf8f5] text-sm text-[#2c2b28] placeholder-[#cbc4b8] outline-none focus:ring-2 transition
+                                    ${errors.identifier
+                                        ? "border-red-300 focus:ring-red-200"
+                                        : "border-[#e6e1d8] focus:ring-[#2c2b28]/10 focus:border-[#2c2b28]/30"
+                                    }`}
                             />
                             {errors.identifier && (
-                                <p className="text-xs text-red-500 pt-1">{errors.identifier.message}</p>
+                                <p className="text-xs text-red-500">{errors.identifier.message}</p>
                             )}
                         </div>
 
-                        {/* Password Field */}
-                        <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-[#5b5852]">Password</label>
-                                <a href="/forgot-password" className="text-xs text-[#8b877f] hover:text-[#2c2b28] transition">
-                                    Forgot password?
-                                </a>
-                            </div>
+                        {/* Password */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-medium text-[#5b5852]">Password</label>
                             <input
                                 type="password"
                                 placeholder="••••••••"
                                 {...register("password")}
-                                className={`w-full px-0 py-2 border-b bg-transparent text-[#2c2b28] text-base placeholder-[#cbc4b8] outline-none transition-all focus:border-[#2c2b28] ${
-                                    errors.password
-                                        ? "border-red-400"
-                                        : "border-[#e0dbd2]"
-                                }`}
+                                className={`w-full px-4 py-2.5 rounded-xl border bg-[#faf8f5] text-sm text-[#2c2b28] placeholder-[#cbc4b8] outline-none focus:ring-2 transition
+                                    ${errors.password
+                                        ? "border-red-300 focus:ring-red-200"
+                                        : "border-[#e6e1d8] focus:ring-[#2c2b28]/10 focus:border-[#2c2b28]/30"
+                                    }`}
                             />
                             {errors.password && (
-                                <p className="text-xs text-red-500 pt-1">{errors.password.message}</p>
+                                <p className="text-xs text-red-500">{errors.password.message}</p>
                             )}
                         </div>
 
@@ -203,13 +204,13 @@ export default function SignInForm() {
 
                     {/* Sign up link */}
                     <p className="text-center text-sm text-[#a39e94] mt-8">
-                        Don't have an account?{" "}
-                        <a href="/sign-up" className="text-[#2c2b28] font-medium hover:underline">
+                        Don&apos;t have an account?{" "}
+                        <Link href="/sign-up" className="text-[#2c2b28] font-medium hover:underline">
                             Create account
-                        </a>
+                        </Link>
                     </p>
 
-                    {/* Subtle footer line */}
+                    {/* Terms footer */}
                     <div className="mt-8 text-center">
                         <p className="text-[10px] text-[#cbc4b8] tracking-wide">
                             Secure workspace • End-to-end encrypted

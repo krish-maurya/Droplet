@@ -13,7 +13,12 @@ export const signUpSchema = z.object(
         passwordConfirmation: z
             .string()
             .min(1, { message: "please confirm your password" }),
-
+        firstName: z
+            .string()
+            .min(1, { message: "First name is required" }),
+        lastName: z
+            .string()
+            .min(1, { message: "Last name is required" }),
     }
 )
     .refine((data) => data.password === data.passwordConfirmation, {

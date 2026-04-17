@@ -1,3 +1,4 @@
+import { useUser } from "@clerk/nextjs";
 import { FilesIcon, FoldersIcon, StarIcon, TrashIcon } from "./Icon";
 
 export default function SideBar({
@@ -18,6 +19,8 @@ export default function SideBar({
     { label: "Trash", icon: <TrashIcon className="w-5 h-5 text-[#3f3c36]" />, count: trashedCount, view: "trash" },
   ];
 
+  const { user } = useUser();
+
   return (
     <aside className="w-18 md:w-65 shrink-0 bg-[#ece8e1] border-r border-[#e0dbd2]">
       <div className="sticky top-0 flex flex-col h-screen py-6 px-3 md:px-4">
@@ -33,11 +36,10 @@ export default function SideBar({
             <button
               key={item.label}
               onClick={() => setActiveView(item.view)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                activeView === item.view
-                  ? "bg-white/60 shadow-sm text-[#2c2b28]"
-                  : "text-[#5b5852] hover:bg-white/40"
-              }`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${activeView === item.view
+                ? "bg-white/60 shadow-sm text-[#2c2b28]"
+                : "text-[#5b5852] hover:bg-white/40"
+                }`}
             >
               <span className="shrink-0">{item.icon}</span>
               <span className="hidden md:inline text-sm font-medium">{item.label}</span>
@@ -59,10 +61,12 @@ export default function SideBar({
           )}
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#5b5852] hover:bg-white/40 transition-all"
+            className=" w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[#5b5852] hover:bg-white/40 transition-all"
           >
-            <div className="w-6 h-6 rounded-full bg-[#2c2b28] flex items-center justify-center text-white text-[11px] font-medium">JD</div>
-            <span className="hidden md:inline text-sm">Jamie Dawson</span>
+            <div className="w-8 h-8 rounded-full bg-[#2c2b28] flex items-center justify-center text-white text-[11px] font-medium shrink-0">
+              {user?.firstName?.charAt(0).toUpperCase()}{user?.lastName?.charAt(0).toUpperCase()}
+            </div>
+            <span className="hidden md:inline text-sm pr-1">{user?.firstName} {user?.lastName}</span>
           </button>
         </div>
       </div>

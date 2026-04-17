@@ -1,8 +1,10 @@
 "use client";
 import { useEffect } from "react";
+import Image from "next/image";
+import { CardLoader } from "./Loader";
 import { CloseIcon, DownloadIcon, StarIcon } from "./Icon";
 
-export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar, onMoveToTrash } :{ file: FileItem | null; isOpen: boolean; onClose: () => void; onToggleStar?: (file: FileItem) => void; onMoveToTrash?: (file: FileItem) => void }) {
+export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar, onMoveToTrash, isLoadingPreview = false } :{ file: FileItem | null; isOpen: boolean; onClose: () => void; onToggleStar?: (file: FileItem) => void; onMoveToTrash?: (file: FileItem) => void; isLoadingPreview?: boolean }) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -28,6 +30,9 @@ export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar,
     <>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 animate-in fade-in duration-200" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {isLoadingPreview ? (
+          <CardLoader />
+        ) : (
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-5 border-b border-[#e6e1d8]">
             <div className="flex items-center gap-3">
@@ -45,7 +50,14 @@ export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar,
             {file.url ? (
               <>
                 {["jpg", "jpeg", "png", "gif", "webp"].includes(file.extension || "") && (
-                  <img src={file.url} alt={file.name} className="max-h-50 rounded-xl object-contain" />
+                  <Image
+                    src={file.url}
+                    alt={file.name}
+                    width={800}
+                    height={500}
+                    className="max-h-50 rounded-xl object-contain"
+                    unoptimized
+                  />
                 )}
                 {file.extension === "pdf" && (
                   <iframe src={file.url} className="w-full h-75 rounded-xl" />
@@ -79,6 +91,7 @@ export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar,
             )}
           </div>
         </div>
+        )}
       </div>
     </>
   );

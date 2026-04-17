@@ -32,7 +32,6 @@ export async function DELETE(
         }
 
         //delete the file
-
         const deletedFiles = await db.delete(files).where(and(
             eq(files.id, fileId),
             eq(files.userId, userId)
