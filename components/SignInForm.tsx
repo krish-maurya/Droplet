@@ -2,18 +2,21 @@
 
 import { useForm } from "react-hook-form";
 import { useSignIn } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signInSchema } from "@/schemas/signInSchema";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FullPageLoader } from "@/components/Loader";
 
 export default function SignInForm() {
 
     const router = useRouter();
     const { signIn } = useSignIn();
+    const { isSignedIn } = useAuth();
+    const { signOut } = useClerk();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRedirecting, setIsRedirecting] = useState(false);
@@ -32,55 +35,49 @@ export default function SignInForm() {
     });
 
     const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    if (!signIn) return;
-    
-    setIsSubmitting(true);
-    setAuthError(null);
+        setIsSubmitting(true);
+        setAuthError(null);
 
-    try {
-        const { error } = await signIn.password({
-            emailAddress: data.identifier,
-            password: data.password
-        });
+        try {
+            if (isSignedIn) {
+                await signOut();
+            }
 
-        if (error) {
-            console.error(JSON.stringify(error, null, 2));
-            setAuthError(error.message);
-            return;
-        }
-
-        if (signIn.status === 'complete') {
-            setIsRedirecting(true);
-            
-            await signIn.finalize({
-                navigate: async ({ decorateUrl }) => {
-                    const url = decorateUrl('/dashboard');
-                    if (url.startsWith('http')) {
-                        window.location.href = url;
-                    } else {
-                        router.push(url);
-                    }
-                },
+            const res: any = await signIn.create({
+                identifier: data.identifier,
+                password: data.password,
             });
-        } else if (signIn.status === 'needs_second_factor') {
-            console.log('MFA required');
-        } else if (signIn.status === 'needs_client_trust') {
-            console.log('Client trust verification required');
-        } else {
-            console.error('Sign-in attempt not complete:', signIn.status);
-        }
-    } catch (error: unknown) {
-        console.error("SignIn error:", error);
-        setAuthError(
-            error instanceof Error ? error.message :
-                "An error occurred during the sign-in process"
-        );
-    } finally {
-        setIsSubmitting(false);
-        setIsRedirecting(false);
-    }
-};
+            console.log("data of sign in", signIn);
 
+            if (signIn.status === "complete") {
+                await signIn.finalize({
+                    navigate: ({ session, decorateUrl }) => {
+                        const url = decorateUrl("/dashboard");
+                        router.push(url);
+                    },
+                });
+            } else {
+                setAuthError("Sign-in not complete. Try again.");
+            }
+        } catch (error: any) {
+            console.log("FULL ERROR:", error);
+
+            const err = error?.errors?.[0];
+
+            if (err?.code === "form_identifier_not_found") {
+                setAuthError("No account found with this email.");
+            } else if (err?.code === "form_password_incorrect") {
+                setAuthError("Incorrect password.");
+            } else if (err?.message?.includes("already signed in")) {
+                await signOut();
+                setAuthError("Session conflict. Please try again.");
+            } else {
+                setAuthError(err?.message || "Something went wrong.");
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     if (isRedirecting) {
         return <FullPageLoader />;
     }
