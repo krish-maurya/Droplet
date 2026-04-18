@@ -54,16 +54,18 @@ export default function SignInForm() {
                 setAuthError(res.error.message);
                 return;
             } else {
-                const finalizeRes = await signIn.finalize();
-                if (finalizeRes.error) {
-                    console.error("finalize error", finalizeRes.error);
-                    setAuthError(finalizeRes.error.message);
-                    return;
+                if (signIn.status === "complete") {
+                    await signIn.finalize({
+                        navigate: ({ session, decorateUrl }) => {
+                            const url = decorateUrl("/dashboard");
+                            router.push(url);
+                        },
+                    });
+                    setIsRedirecting(true);
+                    setTimeout(() => {
+                        router.replace("/dashboard");
+                    }, 500);
                 }
-                setIsRedirecting(true);
-                setTimeout(() => {
-                    router.replace("/dashboard");
-                }, 500);
             }
         } catch (error: unknown) {
             console.error("SignIn error:", error);
