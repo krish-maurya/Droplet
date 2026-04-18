@@ -32,51 +32,54 @@ export default function SignInForm() {
     });
 
     const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+    if (!signIn) return;
+    
+    setIsSubmitting(true);
+    setAuthError(null);
 
-        if (!signIn) return;
-        setIsSubmitting(true);
-        setAuthError(null);
+    try {
+        const { error } = await signIn.password({
+            emailAddress: data.identifier,
+            password: data.password
+        });
 
-        try {
-            const signInRes = await signIn.create({
-                identifier: data.identifier,
-            });
-            if (signInRes.error) {
-                setAuthError(signInRes.error.message);
-                return;
-            }
-            const res = await signIn.password({
-                password: data.password
-            });
-
-            if (res.error) {
-                console.error(res.error);
-                setAuthError(res.error.message);
-                return;
-            } else {
-                if (signIn.status === "complete") {
-                    await signIn.finalize({
-                        navigate: ({ session, decorateUrl }) => {
-                            const url = decorateUrl("/dashboard");
-                            router.push(url);
-                        },
-                    });
-                    setIsRedirecting(true);
-                    setTimeout(() => {
-                        router.replace("/dashboard");
-                    }, 500);
-                }
-            }
-        } catch (error: unknown) {
-            console.error("SignIn error:", error);
-            setAuthError(
-                error instanceof Error ? error.message :
-                    "An error occurred during the sign-in process"
-            );
-        } finally {
-            setIsSubmitting(false);
+        if (error) {
+            console.error(JSON.stringify(error, null, 2));
+            setAuthError(error.message);
+            return;
         }
-    };
+
+        if (signIn.status === 'complete') {
+            setIsRedirecting(true);
+            
+            await signIn.finalize({
+                navigate: async ({ decorateUrl }) => {
+                    const url = decorateUrl('/dashboard');
+                    if (url.startsWith('http')) {
+                        window.location.href = url;
+                    } else {
+                        router.push(url);
+                    }
+                },
+            });
+        } else if (signIn.status === 'needs_second_factor') {
+            console.log('MFA required');
+        } else if (signIn.status === 'needs_client_trust') {
+            console.log('Client trust verification required');
+        } else {
+            console.error('Sign-in attempt not complete:', signIn.status);
+        }
+    } catch (error: unknown) {
+        console.error("SignIn error:", error);
+        setAuthError(
+            error instanceof Error ? error.message :
+                "An error occurred during the sign-in process"
+        );
+    } finally {
+        setIsSubmitting(false);
+        setIsRedirecting(false);
+    }
+};
 
     if (isRedirecting) {
         return <FullPageLoader />;
