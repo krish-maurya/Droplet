@@ -230,14 +230,15 @@ export default function SignUpForm() {
             <div className="hidden lg:flex lg:w-1/2 relative z-10 bg-[#ece8e1] border-r border-[#e0dbd2] items-center justify-center p-12">
                 <div className="max-w-md">
                     {/* Logo */}
-                    <div className="mb-12">
-                        <div className="w-14 h-14 rounded-2xl bg-[#2c2b28] flex items-center justify-center shadow-sm">
+                    <div className="mb-12 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm shrink-0">
                             <span className="text-white text-xl font-medium">◈</span>
                         </div>
+                        <span className="font-semibold text-[#2c2b28] tracking-tight text-2xl leading-none">Droplet</span>
                     </div>
 
                     {/* Animated quote */}
-                    <div className="space-y-1 min-h-[200px]">
+                    <div className="space-y-1 min-h-50">
                         <h1 className="text-5xl md:text-8xl font-semibold tracking-[-0.04em] text-[#2c2b28] leading-[0.88]">
                             Join the
                             <br />

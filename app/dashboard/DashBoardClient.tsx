@@ -7,6 +7,7 @@ import SideBar from "@/components/SideBar";
 import { useClerk } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
+import { ConfirmationModal, PromptModal } from "@/components/Modal";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -118,6 +119,8 @@ export default function DashBoardClient({
   const [isSubmittingUpload, setIsSubmittingUpload] = useState(false);
   const [isEmptyingTrash, setIsEmptyingTrash] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const { signOut, user } = useClerk();
 
   // data handling with swr
@@ -241,11 +244,13 @@ export default function DashBoardClient({
     }
   };
 
+  const openEmptyTrashModal = () => {
+    if (trashedCount === 0 || isEmptyingTrash) return;
+    setIsTrashModalOpen(true);
+  };
+
   const handleEmptyTrash = async () => {
     if (trashedCount === 0 || isEmptyingTrash) return;
-
-    const confirmed = window.confirm("Empty trash permanently? This action cannot be undone.");
-    if (!confirmed) return;
 
     setIsEmptyingTrash(true);
     try {
@@ -270,6 +275,7 @@ export default function DashBoardClient({
       console.error("Error emptying trash:", error);
     } finally {
       setIsEmptyingTrash(false);
+      setIsTrashModalOpen(false);
     }
   };
 
@@ -331,31 +337,35 @@ export default function DashBoardClient({
     setIsModalOpen(true);
   };
 
-  const handleCreateFolder = async () => {
-    if (!user) return;
-    const folderName = prompt("Enter folder name:");
-    if (folderName && folderName.trim() !== "") {
-      setIsSubmittingFolder(true);
-      try {
-        const response = await fetch("/api/folder/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: folderName.trim(), userId: user.id, parentId: currentFolderId }),
-        });
-        mutate("/api/folder/fetch");
-        if (response.ok) {
-          const data = await response.json();
-          mutate<FolderResponse>("/api/folder/fetch", (current) => {
-            const nextFolder = mapApiFolderToUiFolder(data.folder);
-            if (!current) return { folders: [nextFolder] };
-            return { folders: [...current.folders, nextFolder] };
-          }, false);
-        }
-      } catch (error) {
-        console.error("Error creating folder:", error);
-      } finally {
-        setIsSubmittingFolder(false);
+  const openCreateFolderModal = () => {
+    if (!user || isSubmittingFolder) return;
+    setIsFolderModalOpen(true);
+  };
+
+  const handleCreateFolder = async (folderName: string) => {
+    if (!user || !folderName.trim()) return;
+
+    setIsSubmittingFolder(true);
+    try {
+      const response = await fetch("/api/folder/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: folderName.trim(), userId: user.id, parentId: currentFolderId }),
+      });
+      mutate("/api/folder/fetch");
+      if (response.ok) {
+        const data = await response.json();
+        mutate<FolderResponse>("/api/folder/fetch", (current) => {
+          const nextFolder = mapApiFolderToUiFolder(data.folder);
+          if (!current) return { folders: [nextFolder] };
+          return { folders: [...current.folders, nextFolder] };
+        }, false);
       }
+    } catch (error) {
+      console.error("Error creating folder:", error);
+    } finally {
+      setIsSubmittingFolder(false);
+      setIsFolderModalOpen(false);
     }
   };
 
@@ -464,14 +474,14 @@ export default function DashBoardClient({
                     {isSubmittingUpload ? <InlineLoader text="Uploading..." /> : <><UploadIcon /><span>Upload File</span></>}
                     <input disabled={isSubmittingUpload} type="file" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); }} />
                   </label>
-                  <button disabled={isSubmittingFolder} onClick={handleCreateFolder} className="flex items-center gap-2 rounded-full bg-[#2c2b28] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#3d3b37] disabled:cursor-not-allowed disabled:opacity-60">
+                  <button disabled={isSubmittingFolder} onClick={openCreateFolderModal} className="flex items-center gap-2 rounded-full bg-[#2c2b28] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#3d3b37] disabled:cursor-not-allowed disabled:opacity-60">
                     {isSubmittingFolder ? <InlineLoader text="Creating..." /> : <><PlusIcon /><span>Create Folder</span></>}
                   </button>
                 </div>
               )}
               {activeView === "trash" && (
                 <button
-                  onClick={handleEmptyTrash}
+                  onClick={openEmptyTrashModal}
                   disabled={trashedCount === 0 || isEmptyingTrash}
                   className="flex items-center gap-2 rounded-full border border-[#e0b8b0] bg-[#fff6f4] px-5 py-2.5 text-sm font-medium text-[#a14f3f] shadow-sm transition-all hover:bg-[#ffe9e4] disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -560,7 +570,7 @@ export default function DashBoardClient({
                       {isSubmittingUpload ? <InlineLoader text="Uploading..." /> : <><UploadIcon /> Upload File</>}
                       <input disabled={isSubmittingUpload} type="file" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); }} />
                     </label>
-                    <button disabled={isSubmittingFolder} onClick={handleCreateFolder} className="flex items-center gap-2 rounded-full bg-[#2c2b28] px-5 py-2 text-sm font-medium text-white hover:bg-[#3d3b37] transition disabled:cursor-not-allowed disabled:opacity-60">
+                    <button disabled={isSubmittingFolder} onClick={openCreateFolderModal} className="flex items-center gap-2 rounded-full bg-[#2c2b28] px-5 py-2 text-sm font-medium text-white hover:bg-[#3d3b37] transition disabled:cursor-not-allowed disabled:opacity-60">
                       {isSubmittingFolder ? <InlineLoader text="Creating..." /> : <><PlusIcon /> Create Folder</>}
                     </button>
                   </div>
@@ -573,6 +583,31 @@ export default function DashBoardClient({
       </div>
 
       <FilePreviewModal file={selectedFile} isOpen={isModalOpen} isLoadingPreview={isLoadingPreview} onClose={() => { setIsModalOpen(false); setSelectedFile(null); }} onToggleStar={(file) => toggleStar(file, 'file')} onMoveToTrash={(file) => moveToTrash(file, 'file')} />
+      {/* Empty Trash Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isTrashModalOpen}
+        onClose={() => setIsTrashModalOpen(false)}
+        onConfirm={handleEmptyTrash}
+        title="Empty Trash"
+        message="Are you sure you want to permanently delete all items in the Trash? This action cannot be undone."
+        confirmText="Empty Trash"
+        cancelText="Cancel"
+        type="danger"
+        isLoading={isEmptyingTrash}
+      />
+
+      {/* Create Folder Prompt Modal */}
+      <PromptModal
+        isOpen={isFolderModalOpen}
+        onClose={() => setIsFolderModalOpen(false)}
+        onConfirm={handleCreateFolder}
+        title="New Folder"
+        message="Enter a name for your new folder"
+        placeholder="Folder name"
+        confirmText="Create"
+        cancelText="Cancel"
+        isLoading={isSubmittingFolder}
+      />
     </div>
   );
 }

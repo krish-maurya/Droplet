@@ -70,7 +70,7 @@ export default function SignInForm() {
             console.error("SignIn error:", error);
             setAuthError(
                 error instanceof Error ? error.message :
-                "An error occurred during the sign-in process"
+                    "An error occurred during the sign-in process"
             );
         } finally {
             setIsSubmitting(false);
@@ -84,7 +84,7 @@ export default function SignInForm() {
     return (
         <div className="min-h-screen flex">
             {/* Subtle grid background overlay */}
-            <div 
+            <div
                 className="fixed inset-0 pointer-events-none z-0"
                 style={{
                     backgroundImage: `
@@ -99,10 +99,11 @@ export default function SignInForm() {
             <div className="hidden lg:flex lg:w-1/2 relative z-10 bg-[#ece8e1] border-r border-[#e0dbd2] items-center justify-center p-12">
                 <div className="max-w-md">
                     {/* Logo */}
-                    <div className="mb-12">
-                        <div className="w-14 h-14 rounded-2xl bg-[#2c2b28] flex items-center justify-center shadow-sm">
+                    <div className="mb-12 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm shrink-0">
                             <span className="text-white text-xl font-medium">◈</span>
                         </div>
+                        <span className="font-semibold text-[#2c2b28] tracking-tight text-2xl leading-none">Droplet</span>
                     </div>
 
                     {/* Animated quote section */}

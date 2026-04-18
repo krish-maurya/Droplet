@@ -4,7 +4,7 @@ import Image from "next/image";
 import { CardLoader } from "./Loader";
 import { CloseIcon, DownloadIcon, StarIcon } from "./Icon";
 
-export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar, onMoveToTrash, isLoadingPreview = false } :{ file: FileItem | null; isOpen: boolean; onClose: () => void; onToggleStar?: (file: FileItem) => void; onMoveToTrash?: (file: FileItem) => void; isLoadingPreview?: boolean }) {
+export default function FilePreviewModal({ file, isOpen, onClose, onToggleStar, onMoveToTrash, isLoadingPreview = false }: { file: FileItem | null; isOpen: boolean; onClose: () => void; onToggleStar?: (file: FileItem) => void; onMoveToTrash?: (file: FileItem) => void; isLoadingPreview?: boolean }) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -15,8 +15,11 @@ export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar,
 
   if (!isOpen || !file) return null;
 
+  const normalizedExtension = file.extension?.toLowerCase() || file.type.split("/").pop()?.toLowerCase() || "";
+  const normalizedMimeType = file.type.toLowerCase();
+
   const getPreviewIcon = () => {
-    const ext = file.extension?.toLowerCase();
+    const ext = normalizedExtension;
     if (ext === 'pdf') return '📄';
     if (ext === 'xlsx' || ext === 'csv') return '📊';
     if (ext === 'md') return '📝';
@@ -26,6 +29,25 @@ export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar,
     return '📎';
   };
 
+  const handleDownload = async () => {
+    if (!file.url) return;
+
+    try {
+      const response = await fetch(file.url, { mode: "cors" });
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = file.name || `download.${normalizedExtension || "file"}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.open(file.url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 animate-in fade-in duration-200" onClick={onClose} />
@@ -33,64 +55,77 @@ export default function FilePreviewModal ({ file, isOpen, onClose, onToggleStar,
         {isLoadingPreview ? (
           <CardLoader />
         ) : (
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between p-5 border-b border-[#e6e1d8]">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#f0ede8] flex items-center justify-center text-2xl">{getPreviewIcon()}</div>
-              <div>
-                <h3 className="font-semibold text-[#2c2b28]">{file.name}</h3>
-                <p className="text-xs text-[#8b877f]">{file.type} • {file.size}</p>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-[#e6e1d8]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#f0ede8] flex items-center justify-center text-2xl">{getPreviewIcon()}</div>
+                <div>
+                  <h3 className="font-semibold text-[#2c2b28]">{file.name}</h3>
+                  <p className="text-xs text-[#8b877f]">{file.type} • {file.size}</p>
+                </div>
               </div>
+              <button onClick={onClose} className="p-1 rounded-lg text-[#a39e94] hover:bg-[#f0ede8] transition-colors">
+                <CloseIcon />
+              </button>
             </div>
-            <button onClick={onClose} className="p-1 rounded-lg text-[#a39e94] hover:bg-[#f0ede8] transition-colors">
-              <CloseIcon />
-            </button>
-          </div>
-          <div className="p-4 flex items-center justify-center min-h-50">
-            {file.url ? (
-              <>
-                {["jpg", "jpeg", "png", "gif", "webp"].includes(file.extension || "") && (
-                  <Image
-                    src={file.url}
-                    alt={file.name}
-                    width={800}
-                    height={500}
-                    className="max-h-50 rounded-xl object-contain"
-                    unoptimized
-                  />
-                )}
-                {file.extension === "pdf" && (
-                  <iframe src={file.url} className="w-full h-75 rounded-xl" />
-                )}
-                {["mp4", "webm"].includes(file.extension || "") && (
-                  <video controls className="max-h-50 rounded-xl">
-                    <source src={file.url} />
-                  </video>
-                )}
-              </>
-            ) : (
-              <div className="text-center">
-                <div className="w-20 h-20 rounded-2xl bg-[#f0ede8] flex items-center justify-center text-4xl mx-auto mb-3">{getPreviewIcon()}</div>
-                <p className="text-sm text-[#5b5852]">No preview available</p>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-3 p-5 border-t border-[#e6e1d8]">
-            <button className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-[#d1cbc0] bg-white px-4 py-2.5 text-sm font-medium text-[#4a4741] transition-all hover:bg-[#faf8f5]">
-              <DownloadIcon /> Download
-            </button>
-            {onToggleStar && (
-              <button onClick={() => onToggleStar(file)} className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-[#d1cbc0] bg-white px-4 py-2.5 text-sm font-medium text-[#4a4741] transition-all hover:bg-[#faf8f5]">
-                <StarIcon className="w-4 h-4" filled={file.isStarred} /> {file.isStarred ? "Starred" : "Star"}
+            <div className="p-4 flex items-center justify-center min-h-50">
+              {file.url ? (
+                <>
+                  {((normalizedMimeType.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "avif"].includes(normalizedExtension)) && (
+                    <Image
+                      src={file.url}
+                      alt={file.name}
+                      width={800}
+                      height={500}
+                      className="max-h-50 rounded-xl object-contain"
+                      unoptimized
+                    />
+                  ))}
+                  {normalizedExtension === "pdf" && (
+                    <iframe src={file.url} className="w-full h-75 rounded-xl" />
+                  )}
+                  {["mp4", "webm"].includes(normalizedExtension) && (
+                    <video controls className="max-h-50 rounded-xl">
+                      <source src={file.url} />
+                    </video>
+                  )}
+                </>
+              ) : (
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-2xl bg-[#f0ede8] flex items-center justify-center text-4xl mx-auto mb-3">{getPreviewIcon()}</div>
+                  <p className="text-sm text-[#5b5852]">No preview available</p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 p-5 border-t border-[#e6e1d8]">
+              <button
+                type="button"
+                onClick={handleDownload}
+                disabled={!file.url}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-[#d1cbc0] bg-white px-4 py-2.5 text-sm font-medium text-[#4a4741] transition-all hover:bg-[#faf8f5] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <DownloadIcon />
+                Download
               </button>
-            )}
-            {onMoveToTrash && !file.isTrashed && (
-              <button onClick={() => onMoveToTrash(file)} className="flex-1 rounded-xl bg-[#a14f3f] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#b85c4a]">
-                Move to Trash
-              </button>
-            )}
+              {onToggleStar && (
+                <button onClick={() => {
+                  onToggleStar(file);
+                  onClose();
+                }
+                } className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-[#d1cbc0] bg-white px-4 py-2.5 text-sm font-medium text-[#4a4741] transition-all hover:bg-[#faf8f5]">
+                  <StarIcon className="w-4 h-4" filled={file.isStarred} /> {file.isStarred ? "Starred" : "Star"}
+                </button>
+              )}
+              {onMoveToTrash && !file.isTrashed && (
+                <button onClick={() => {
+                  onMoveToTrash(file);
+                  onClose(); 
+                }} className="flex-1 rounded-xl bg-[#a14f3f] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#b85c4a]">
+                  Move to Trash
+                </button>
+              )}
+            </div>
           </div>
-        </div>
         )}
       </div>
     </>

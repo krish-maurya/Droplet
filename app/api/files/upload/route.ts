@@ -51,7 +51,31 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        if (file.type.startsWith("image/") || file.type !== "application/pdf") {
+        const originalFileName = file.name;
+        const fileExtension = (originalFileName.split(".").pop() || "").toLowerCase();
+        const normalizedMimeType = (file.type || "").toLowerCase();
+
+        const extensionToMime: Record<string, string> = {
+            jpg: "image/jpeg",
+            jpeg: "image/jpeg",
+            png: "image/png",
+            gif: "image/gif",
+            webp: "image/webp",
+            bmp: "image/bmp",
+            svg: "image/svg+xml",
+            avif: "image/avif",
+            pdf: "application/pdf",
+        };
+
+        const imageExtensions = new Set(["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "avif"]);
+
+        const isImage = normalizedMimeType.startsWith("image/") || imageExtensions.has(fileExtension);
+        const isPdf =
+            normalizedMimeType === "application/pdf" ||
+            normalizedMimeType === "application/x-pdf" ||
+            fileExtension === "pdf";
+
+        if (isImage || isPdf) {
             // upload file to imagekit
             const buffer = await file.arrayBuffer();
             const fileBuffer = Buffer.from(buffer);
@@ -61,18 +85,16 @@ export async function POST(request: NextRequest) {
                 ? `/droplet/${userId}/folder/${parentId}`
                 : `/droplet/${userId}/`;
 
-            const originalFileName = file.name;
-            const fileExtension = originalFileName.split(".").pop() || "";
-
             // validation
             if (!originalFileName || !fileExtension) {
                 return NextResponse.json({ error: "Invalid file name" }, { status: 400 });
             }
 
+            const resolvedMimeType = normalizedMimeType || extensionToMime[fileExtension] || "application/octet-stream";
             const uniqueName = `${uuidv4()}.${fileExtension}`;
 
             const result = await imagekit.files.upload({
-                file: `data:${file.type};base64,${base64File}`,
+                file: `data:${resolvedMimeType};base64,${base64File}`,
                 fileName: uniqueName,
                 folder: folderPath,
                 useUniqueFileName: false,
@@ -83,7 +105,7 @@ export async function POST(request: NextRequest) {
                 name: originalFileName,
                 path: result.filePath ?? "",
                 size: file.size,
-                type: file.type,
+                type: resolvedMimeType,
                 fileUrl: result.url ?? "",
                 thumbnailUrl: result.thumbnailUrl ?? null,
                 userId,

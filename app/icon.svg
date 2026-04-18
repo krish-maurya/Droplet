@@ -1,0 +1,30 @@
+<svg
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Rounded square background -->
+  <rect
+    x="4"
+    y="4"
+    width="56"
+    height="56"
+    rx="18"
+    fill="#2C2B28"
+  />
+
+  <!-- Diamond icon -->
+  <text
+    x="32"
+    y="39"
+    text-anchor="middle"
+    fill="white"
+    font-size="28"
+    font-weight="600"
+    font-family="Arial, sans-serif"
+  >
+    ◈
+  </text>
+</svg>

@@ -24,11 +24,11 @@ export default function SideBar({
   return (
     <aside className="w-18 md:w-65 shrink-0 bg-[#ece8e1] border-r border-[#e0dbd2]">
       <div className="sticky top-0 flex flex-col h-screen py-6 px-3 md:px-4">
-        <div className="mb-10 flex items-center justify-center md:justify-start gap-2 px-2">
-          <div className="w-8 h-8 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm">
-            <span className="text-white text-sm font-medium">◈</span>
+        <div className="mb-12 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm shrink-0">
+            <span className="text-white text-xl font-medium">◈</span>
           </div>
-          <span className="hidden md:inline-block font-semibold text-[#2c2b28] tracking-tight text-base">canvas</span>
+          <span className="font-semibold text-[#2c2b28] tracking-tight text-2xl leading-none">Droplet</span>
         </div>
 
         <nav className="flex-1 space-y-1.5">
