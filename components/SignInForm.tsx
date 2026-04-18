@@ -65,7 +65,6 @@ export default function SignInForm() {
                     router.replace("/dashboard");
                 }, 500);
             }
-
         } catch (error: unknown) {
             console.error("SignIn error:", error);
             setAuthError(
