@@ -420,7 +420,7 @@ export default function DashBoardClient({
           filesCount={filesCount}
           isProfileMenuOpen={isProfileMenuOpen}
           setIsProfileMenuOpen={setIsProfileMenuOpen}
-          signOut={() => signOut({ redirectUrl: "/sign-in" })}
+          signOut={() => signOut({ redirectUrl: "/" })}
         />
 
         <main className="flex-1 min-w-0 overflow-auto">

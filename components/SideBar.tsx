@@ -28,7 +28,7 @@ export default function SideBar({
           <div className="w-8 h-8 rounded-xl bg-[#2c2b28] flex items-center justify-center shadow-sm shrink-0">
             <span className="text-white text-xl font-medium">◈</span>
           </div>
-          <span className="font-semibold text-[#2c2b28] tracking-tight text-2xl leading-none">Droplet</span>
+          <span className="hidden md:inline font-semibold text-[#2c2b28] tracking-tight text-2xl leading-none">Droplet</span>
         </div>
 
         <nav className="flex-1 space-y-1.5">
